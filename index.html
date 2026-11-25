@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AUDIO LAB ST-2000 — 2-Channel DJ Speaker & Earphone Tester</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-obsidian: #080a0e;
+      --panel-dark: #10141c;
+      --panel-elevated: #161b26;
+      --border-metal: #262f40;
+      --cyan-left: #00e5ff;
+      --cyan-glow: rgba(0, 229, 255, 0.35);
+      --amber-right: #ff7a00;
+      --amber-glow: rgba(255, 122, 0, 0.35);
+      --emerald-both: #10b981;
+      --red-peak: #ef4444;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-obsidian);
+      background-image:
+        radial-gradient(circle at 15% 0%, rgba(0, 229, 255, 0.05) 0%, transparent 40%),
+        radial-gradient(circle at 85% 0%, rgba(255, 122, 0, 0.05) 0%, transparent 40%);
+      color: #e2e8f0;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    .font-mono-studio {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Brushed dark hardware panel */
+    .studio-panel {
+      background: linear-gradient(180deg, #141923 0%, #0e121a 100%);
+      border: 1px solid var(--border-metal);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.05),
+        0 12px 32px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Speaker cabinet styling */
+    .speaker-cabinet {
+      background: linear-gradient(165deg, #171d28 0%, #0c0f16 100%);
+      border: 1px solid #283244;
+      box-shadow:
+        inset 0 1px 1px rgba(255, 255, 255, 0.06),
+        inset 0 -8px 20px rgba(0, 0, 0, 0.6),
+        0 16px 40px rgba(0, 0, 0, 0.65);
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, opacity 0.25s ease;
+    }
+
+    .speaker-cabinet.active-left {
+      border-color: rgba(0, 229, 255, 0.55);
+      box-shadow:
+        inset 0 1px 1px rgba(0, 229, 255, 0.2),
+        0 0 32px rgba(0, 229, 255, 0.14),
+        0 16px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .speaker-cabinet.active-right {
+      border-color: rgba(255, 122, 0, 0.55);
+      box-shadow:
+        inset 0 1px 1px rgba(255, 122, 0, 0.2),
+        0 0 32px rgba(255, 122, 0, 0.14),
+        0 16px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .speaker-cabinet.dimmed {
+      opacity: 0.52;
+    }
+
+    /* Corner metallic screws */
+    .screw {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 35%, #4b5563, #111827);
+      border: 1px solid #090c12;
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.15);
+    }
+
+    /* Realistic Tweeter Dome */
+    .tweeter-housing {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 50% 50%, #1e2532 45%, #0c0f15 72%, #2a3345 100%);
+      border: 2px solid #2b3547;
+      box-shadow: inset 0 4px 10px rgba(0, 0, 0, 0.85), 0 2px 6px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    @media (max-width: 640px) {
+      .tweeter-housing {
+        width: 52px;
+        height: 52px;
+      }
+    }
+
+    .tweeter-dome {
+      width: 54%;
+      height: 54%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #64748b 0%, #1e293b 55%, #090d14 100%);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      will-change: transform, box-shadow;
+    }
+
+    /* Realistic Woofer Cone */
+    .woofer-outer {
+      width: 176px;
+      height: 176px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #0d1118 62%, #252e3f 85%, #121722 100%);
+      border: 3px solid #263042;
+      box-shadow:
+        inset 0 8px 22px rgba(0, 0, 0, 0.9),
+        0 4px 16px rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    @media (max-width: 640px) {
+      .woofer-outer {
+        width: 124px;
+        height: 124px;
+      }
+    }
+
+    .woofer-surround {
+      width: 86%;
+      height: 86%;
+      border-radius: 50%;
+      background: radial-gradient(circle, #090c11 58%, #1e2430 78%, #0a0d12 96%);
+      box-shadow: inset 0 4px 14px rgba(0, 0, 0, 0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .woofer-cone {
+      width: 82%;
+      height: 82%;
+      border-radius: 50%;
+      background:
+        repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 6px),
+        radial-gradient(circle at 42% 38%, #2a3342 0%, #121720 65%, #080a0f 100%);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(0,0,0,0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform, box-shadow;
+    }
+
+    .woofer-dustcap {
+      width: 38%;
+      height: 38%;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #475569 0%, #151b26 60%, #07090d 100%);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Glowing acoustic ring behind woofer */
+    .woofer-ring {
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      pointer-events: none;
+      opacity: 0;
+      will-change: opacity, transform;
+    }
+
+    .woofer-ring-left {
+      border: 2px solid var(--cyan-left);
+      box-shadow: 0 0 22px var(--cyan-glow), inset 0 0 18px var(--cyan-glow);
+    }
+
+    .woofer-ring-right {
+      border: 2px solid var(--amber-right);
+      box-shadow: 0 0 22px var(--amber-glow), inset 0 0 18px var(--amber-glow);
+    }
+
+    /* Tactile Studio Pad Buttons */
+    .pad-btn {
+      background: linear-gradient(180deg, #1b2230 0%, #121722 100%);
+      border: 1px solid #2d384c;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.07),
+        0 4px 10px rgba(0, 0, 0, 0.45);
+      transition: all 0.15s ease;
+    }
+
+    .pad-btn:hover {
+      background: linear-gradient(180deg, #222b3d 0%, #161c29 100%);
+      border-color: #42526e;
+      transform: translateY(-1px);
+    }
+
+    .pad-btn:active {
+      transform: translateY(1px);
+    }
+
+    .pad-btn.pad-active-left {
+      background: linear-gradient(180deg, rgba(0, 229, 255, 0.22) 0%, rgba(0, 229, 255, 0.08) 100%);
+      border-color: var(--cyan-left);
+      color: #e0fcff;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    .pad-btn.pad-active-right {
+      background: linear-gradient(180deg, rgba(255, 122, 0, 0.24) 0%, rgba(255, 122, 0, 0.08) 100%);
+      border-color: var(--amber-right);
+      color: #fff0e0;
+      box-shadow: 0 0 18px rgba(255, 122, 0, 0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    .pad-btn.pad-active-both {
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.24) 0%, rgba(16, 185, 129, 0.08) 100%);
+      border-color: var(--emerald-both);
+      color: #e6fff5;
+      box-shadow: 0 0 18px rgba(16, 185, 129, 0.28), inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+
+    /* Custom Volume Range Slider */
+    input[type="range"].studio-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      background: #1f2736;
+      height: 6px;
+      border-radius: 999px;
+      outline: none;
+    }
+
+    input[type="range"].studio-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      border: 2px solid #00e5ff;
+      cursor: pointer;
+      box-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+    }
+
+    input[type="range"].studio-slider::-moz-range-thumb {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #e2e8f0;
+      border: 2px solid #00e5ff;
+      cursor: pointer;
+    }
+
+    /* LED VU Meter Segments */
+    .vu-segment {
+      height: 8px;
+      flex: 1;
+      border-radius: 2px;
+      background: #1a2130;
+      transition: background-color 0.05s linear, box-shadow 0.05s linear;
+    }
+  </style>
+</head>
+<body class="p-3 sm:p-5 lg:p-6 flex flex-col items-center">
+
+  <!-- Main Hardware Chassis Container -->
+  <div class="w-full max-w-6xl space-y-4">
+
+    <!-- Top Studio Header Bar -->
+    <header class="studio-panel rounded-2xl px-4 py-3 sm:px-5 sm:py-3.5 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-xl bg-slate-900 border border-slate-700 flex items-center justify-center shadow-inner">
+          <svg class="w-5 h-5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="4" y="2" width="16" height="20" rx="2"></rect>
+            <circle cx="12" cy="14" r="4"></circle>
+            <circle cx="12" cy="6" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm sm:text-base font-extrabold tracking-wide text-slate-100 uppercase">AUDIO LAB <span class="text-cyan-400">ST-2000</span></h1>
+            <span class="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-mono-studio font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              100% TRUE ISOLATION
+            </span>
+          </div>
+          <p class="text-[11px] sm:text-xs text-slate-400">2-Channel DJ Speaker &amp; Earphone Stereo Diagnostic Console</p>
+        </div>
+      </div>
+
+      <!-- Right Hardware Controls: Voice Toggle + Master Volume -->
+      <div class="flex items-center gap-3 sm:gap-5 w-full sm:w-auto justify-between sm:justify-end">
+        <!-- Voice Callout Toggle -->
+        <button id="voiceToggleBtn" type="button" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-700 hover:border-slate-500 text-xs font-medium text-slate-200 transition">
+          <span id="voiceLed" class="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]"></span>
+          <span>Voice: <strong id="voiceStatusText" class="font-mono-studio text-emerald-400">ON</strong></span>
+        </button>
+
+        <!-- Master Volume Control -->
+        <div class="flex items-center gap-2.5 bg-slate-900/80 border border-slate-800 px-3 py-1.5 rounded-xl">
+          <svg class="w-4 h-4 text-slate-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <input id="volumeSlider" type="range" min="0" max="100" value="80" class="studio-slider w-20 sm:w-28" aria-label="Master Volume" />
+          <span id="volumeReadout" class="font-mono-studio text-xs text-cyan-300 w-9 text-right">80%</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Stage: Left Speaker | Central Console | Right Speaker -->
+    <!-- On mobile: Console spans top full-width, Left & Right Speakers sit side-by-side underneath -->
+    <main class="grid grid-cols-2 lg:grid-cols-[1fr_340px_1fr] gap-3 sm:gap-4 items-stretch">
+
+      <!-- CENTRAL STUDIO CONSOLE (Top on Mobile, Center on Desktop) -->
+      <section class="col-span-2 lg:col-span-1 lg:order-2 studio-panel rounded-2xl p-4 sm:p-5 flex flex-col justify-between gap-4">
+        <!-- Active Channel Indicator Badges -->
+        <div class="flex items-center justify-between gap-2">
+          <span class="text-[10px] font-mono-studio uppercase tracking-widest text-slate-400">Active Output</span>
+          <div class="flex items-center gap-1.5">
+            <span id="badgeL" class="px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500 transition">L</span>
+            <span id="badgeBoth" class="px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500 transition">L+R</span>
+            <span id="badgeR" class="px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500 transition">R</span>
+          </div>
+        </div>
+
+        <!-- OLED Telemetry Display Screen -->
+        <div class="rounded-xl bg-[#07090d] border border-slate-800 p-4 shadow-inner space-y-3">
+          <div class="flex items-center justify-between text-[11px] font-mono-studio text-slate-400">
+            <span id="modeTag">STANDBY</span>
+            <span id="bpmTag" class="text-cyan-400/90">128 BPM</span>
+          </div>
+
+          <div>
+            <h2 id="phaseTitle" class="text-base sm:text-lg font-bold tracking-tight text-slate-100 leading-snug">Ready for Sound Check</h2>
+            <p id="phaseSubtitle" class="text-xs text-slate-400 mt-0.5">Wear earphones or connect stereo speakers &amp; press Start.</p>
+          </div>
+
+          <!-- Real-time Frequency & Timer Readouts -->
+          <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="bg-slate-900/80 border border-slate-800/90 rounded-lg px-2.5 py-1.5">
+              <div class="text-[10px] font-mono-studio text-slate-500 uppercase">Signal Info</div>
+              <div id="freqReadout" class="font-mono-studio text-xs sm:text-sm font-semibold text-emerald-400 truncate">-- Hz</div>
+            </div>
+            <div class="bg-slate-900/80 border border-slate-800/90 rounded-lg px-2.5 py-1.5">
+              <div class="text-[10px] font-mono-studio text-slate-500 uppercase">Sequence Time</div>
+              <div id="timerReadout" class="font-mono-studio text-xs sm:text-sm font-semibold text-slate-200">00:00 / 02:00</div>
+            </div>
+          </div>
+
+          <!-- Auto Sequence Progress Bar -->
+          <div class="space-y-1.5 pt-1">
+            <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+              <div id="progressBar" class="h-full w-0 bg-gradient-to-r from-cyan-400 via-emerald-400 to-amber-400 transition-all duration-150"></div>
+            </div>
+            <div class="flex justify-between text-[9px] font-mono-studio text-slate-500">
+              <span>L-CH</span>
+              <span>R-CH</span>
+              <span>P-PONG</span>
+              <span>SUB</span>
+              <span>DJ DROP</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Primary Auto 2-Min Sequence Controls -->
+        <div class="space-y-2.5">
+          <div class="grid grid-cols-[1fr_auto] gap-2">
+            <button id="autoTestBtn" type="button" class="flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl font-bold text-sm bg-gradient-to-r from-cyan-500 to-emerald-500 hover:from-cyan-400 hover:to-emerald-400 text-slate-950 shadow-[0_0_24px_rgba(0,229,255,0.28)] active:scale-[0.99] transition">
+              <svg id="autoPlayIcon" class="w-4 h-4 fill-current" viewBox="0 0 24 24"><polygon points="6 4 20 12 6 20 6 4"></polygon></svg>
+              <span id="autoBtnLabel">Start 2-Min DJ Test</span>
+            </button>
+
+            <button id="stopBtn" type="button" title="Stop Audio" class="px-4 py-3.5 rounded-xl font-bold text-sm bg-slate-900 hover:bg-red-950/60 border border-slate-700 hover:border-red-500/60 text-slate-300 hover:text-red-300 active:scale-[0.98] transition flex items-center justify-center">
+              <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="1.5"></rect></svg>
+            </button>
+          </div>
+          <p class="text-[11px] text-center text-slate-500">
+            Auto cycles: Left &rarr; Right &rarr; Ping-Pong &rarr; Deep Sub-Bass &rarr; Hard DJ Drop
+          </p>
+        </div>
+      </section>
+
+      <!-- LEFT SPEAKER CABINET -->
+      <section id="leftCabinet" class="lg:order-1 speaker-cabinet rounded-2xl p-3 sm:p-5 flex flex-col justify-between gap-3 sm:gap-4 relative">
+        <!-- Cabinet Header & Corner Screws -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="screw hidden sm:block"></div>
+            <span id="leftLed" class="w-2.5 h-2.5 rounded-full bg-slate-700 transition"></span>
+            <span class="font-mono-studio text-xs sm:text-sm font-bold tracking-wider text-cyan-400">LEFT CH</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="leftDbReadout" class="font-mono-studio text-[11px] sm:text-xs text-slate-400 bg-slate-950/80 border border-slate-800 px-2 py-0.5 rounded-md">-&infin; dB</span>
+            <div class="screw hidden sm:block"></div>
+          </div>
+        </div>
+
+        <!-- Physical Drivers (Tweeter + Woofer) -->
+        <div class="flex flex-col items-center justify-center gap-3 sm:gap-4 py-1">
+          <!-- High Frequency Tweeter -->
+          <div class="tweeter-housing">
+            <div id="leftTweeter" class="tweeter-dome"></div>
+          </div>
+
+          <!-- Low/Mid Woofer Cone -->
+          <div class="woofer-outer">
+            <div id="leftWooferRing" class="woofer-ring woofer-ring-left"></div>
+            <div class="woofer-surround">
+              <div id="leftWoofer" class="woofer-cone">
+                <div class="woofer-dustcap"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dedicated Left Channel VU Meter & Real-Time Spectrum Canvas -->
+        <div class="space-y-2">
+          <!-- 12-Segment LED VU Meter -->
+          <div id="leftVuMeter" class="flex items-center gap-1 px-1" aria-label="Left Channel VU Meter"></div>
+
+          <!-- Independent Left Frequency Visualizer -->
+          <div class="rounded-xl bg-[#06080c] border border-slate-800/90 p-1.5 h-20 sm:h-24 relative overflow-hidden">
+            <canvas id="leftCanvas" class="w-full h-full block"></canvas>
+            <span class="absolute top-1.5 left-2 font-mono-studio text-[9px] text-cyan-500/70 pointer-events-none">SPECTRUM L</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- RIGHT SPEAKER CABINET -->
+      <section id="rightCabinet" class="lg:order-3 speaker-cabinet rounded-2xl p-3 sm:p-5 flex flex-col justify-between gap-3 sm:gap-4 relative">
+        <!-- Cabinet Header & Corner Screws -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <div class="screw hidden sm:block"></div>
+            <span id="rightLed" class="w-2.5 h-2.5 rounded-full bg-slate-700 transition"></span>
+            <span class="font-mono-studio text-xs sm:text-sm font-bold tracking-wider text-amber-400">RIGHT CH</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="rightDbReadout" class="font-mono-studio text-[11px] sm:text-xs text-slate-400 bg-slate-950/80 border border-slate-800 px-2 py-0.5 rounded-md">-&infin; dB</span>
+            <div class="screw hidden sm:block"></div>
+          </div>
+        </div>
+
+        <!-- Physical Drivers (Tweeter + Woofer) -->
+        <div class="flex flex-col items-center justify-center gap-3 sm:gap-4 py-1">
+          <!-- High Frequency Tweeter -->
+          <div class="tweeter-housing">
+            <div id="rightTweeter" class="tweeter-dome"></div>
+          </div>
+
+          <!-- Low/Mid Woofer Cone -->
+          <div class="woofer-outer">
+            <div id="rightWooferRing" class="woofer-ring woofer-ring-right"></div>
+            <div class="woofer-surround">
+              <div id="rightWoofer" class="woofer-cone">
+                <div class="woofer-dustcap"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dedicated Right Channel VU Meter & Real-Time Spectrum Canvas -->
+        <div class="space-y-2">
+          <!-- 12-Segment LED VU Meter -->
+          <div id="rightVuMeter" class="flex items-center gap-1 px-1" aria-label="Right Channel VU Meter"></div>
+
+          <!-- Independent Right Frequency Visualizer -->
+          <div class="rounded-xl bg-[#06080c] border border-slate-800/90 p-1.5 h-20 sm:h-24 relative overflow-hidden">
+            <canvas id="rightCanvas" class="w-full h-full block"></canvas>
+            <span class="absolute top-1.5 right-2 font-mono-studio text-[9px] text-amber-500/70 pointer-events-none">SPECTRUM R</span>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Manual Quick-Test Deck -->
+    <section class="studio-panel rounded-2xl p-4 sm:p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-mono-studio uppercase tracking-widest text-slate-400">Manual Quick-Test Pads (Instant Trigger)</h3>
+        <span class="text-[11px] text-slate-500 hidden sm:inline">Click any pad to test immediately on demand</span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5">
+        <button type="button" data-mode="left" class="pad-btn rounded-xl p-3 text-left flex flex-col justify-between gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="w-2.5 h-2.5 rounded-full bg-cyan-400"></span>
+            <span class="font-mono-studio text-[10px] text-slate-400">CH-1</span>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm font-bold text-slate-100">Left Only</div>
+            <div class="text-[10px] text-slate-400">Right 100% Mute</div>
+          </div>
+        </button>
+
+        <button type="button" data-mode="right" class="pad-btn rounded-xl p-3 text-left flex flex-col justify-between gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+            <span class="font-mono-studio text-[10px] text-slate-400">CH-2</span>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm font-bold text-slate-100">Right Only</div>
+            <div class="text-[10px] text-slate-400">Left 100% Mute</div>
+          </div>
+        </button>
+
+        <button type="button" data-mode="pingpong" class="pad-btn rounded-xl p-3 text-left flex flex-col justify-between gap-2">
+          <div class="flex items-center justify-between w-full">
+            <div class="flex gap-1">
+              <span class="w-2 h-2 rounded-full bg-cyan-400"></span>
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+            </div>
+            <span class="font-mono-studio text-[10px] text-slate-400">L &harr; R</span>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm font-bold text-slate-100">Ping-Pong</div>
+            <div class="text-[10px] text-slate-400">Alternating Stereo</div>
+          </div>
+        </button>
+
+        <button type="button" data-mode="bass" class="pad-btn rounded-xl p-3 text-left flex flex-col justify-between gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <span class="font-mono-studio text-[10px] text-slate-400">30-90Hz</span>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm font-bold text-slate-100">Deep Bass</div>
+            <div class="text-[10px] text-slate-400">Sub Drop &amp; Sweep</div>
+          </div>
+        </button>
+
+        <button type="button" data-mode="djdrop" class="pad-btn rounded-xl p-3 text-left flex flex-col justify-between gap-2">
+          <div class="flex items-center justify-between w-full">
+            <span class="w-2.5 h-2.5 rounded-full bg-white"></span>
+            <span class="font-mono-studio text-[10px] text-slate-400">128 BPM</span>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm font-bold text-slate-100">Hard DJ Drop</div>
+            <div class="text-[10px] text-slate-400">Full Range Both</div>
+          </div>
+        </button>
+
+        <button type="button" data-mode="stop" class="pad-btn rounded-xl p-3 text-left flex flex-col justify-between gap-2 hover:!border-red-500/70">
+          <div class="flex items-center justify-between w-full">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+            <span class="font-mono-studio text-[10px] text-slate-400">MUTE</span>
+          </div>
+          <div>
+            <div class="text-xs sm:text-sm font-bold text-red-300">Stop All</div>
+            <div class="text-[10px] text-slate-400">Reset Console</div>
+          </div>
+        </button>
+      </div>
+    </section>
+
+    <!-- Non-blocking Status / Error Banner (Hidden unless needed) -->
+    <div id="statusToast" class="hidden rounded-xl bg-amber-500/10 border border-amber-500/30 px-4 py-2.5 text-xs text-amber-300 text-center"></div>
+  </div>
+
+  <script>
+    /**
+     * ============================================================================
+     * AUDIO LAB ST-2000 — TRUE 100% ISOLATED 2-CHANNEL DJ AUDIO ENGINE
+     * ============================================================================
+     * Audio Routing Architecture (Guaranteed Zero Cross-Channel Bleed):
+     *
+     *   [Synth Left Hits]  --> leftBus  --> leftGate  --> leftComp (mono)  --> leftMaster  ──┐
+     *                                                                                        ├──> ChannelMergerNode(2)
+     *   [Synth Right Hits] --> rightBus --> rightGate --> rightComp (mono) --> rightMaster ──┘          │
+     *                                                                                          ┌────────┴────────┐
+     *                                                                                          ▼                 ▼
+     *                                                                                   destination     ChannelSplitterNode(2)
+     *                                                                                                    ├── 0 -> leftAnalyser
+     *                                                                                                    └── 1 -> rightAnalyser
+     */
+
+    (function () {
+      'use strict';
+
+      // -------------------- DOM References --------------------
+      const els = {
+        autoTestBtn: document.getElementById('autoTestBtn'),
+        autoBtnLabel: document.getElementById('autoBtnLabel'),
+        autoPlayIcon: document.getElementById('autoPlayIcon'),
+        stopBtn: document.getElementById('stopBtn'),
+        voiceToggleBtn: document.getElementById('voiceToggleBtn'),
+        voiceLed: document.getElementById('voiceLed'),
+        voiceStatusText: document.getElementById('voiceStatusText'),
+        volumeSlider: document.getElementById('volumeSlider'),
+        volumeReadout: document.getElementById('volumeReadout'),
+
+        badgeL: document.getElementById('badgeL'),
+        badgeBoth: document.getElementById('badgeBoth'),
+        badgeR: document.getElementById('badgeR'),
+        modeTag: document.getElementById('modeTag'),
+        phaseTitle: document.getElementById('phaseTitle'),
+        phaseSubtitle: document.getElementById('phaseSubtitle'),
+        freqReadout: document.getElementById('freqReadout'),
+        timerReadout: document.getElementById('timerReadout'),
+        progressBar: document.getElementById('progressBar'),
+
+        leftCabinet: document.getElementById('leftCabinet'),
+        rightCabinet: document.getElementById('rightCabinet'),
+        leftLed: document.getElementById('leftLed'),
+        rightLed: document.getElementById('rightLed'),
+        leftDbReadout: document.getElementById('leftDbReadout'),
+        rightDbReadout: document.getElementById('rightDbReadout'),
+        leftWoofer: document.getElementById('leftWoofer'),
+        rightWoofer: document.getElementById('rightWoofer'),
+        leftWooferRing: document.getElementById('leftWooferRing'),
+        rightWooferRing: document.getElementById('rightWooferRing'),
+        leftTweeter: document.getElementById('leftTweeter'),
+        rightTweeter: document.getElementById('rightTweeter'),
+        leftVuMeter: document.getElementById('leftVuMeter'),
+        rightVuMeter: document.getElementById('rightVuMeter'),
+        leftCanvas: document.getElementById('leftCanvas'),
+        rightCanvas: document.getElementById('rightCanvas'),
+        padButtons: document.querySelectorAll('.pad-btn[data-mode]'),
+        statusToast: document.getElementById('statusToast')
+      };
+
+      // -------------------- Build 12-Segment LED VU Meters --------------------
+      const VU_COUNT = 12;
+      const leftVuSegments = [];
+      const rightVuSegments = [];
+
+      function buildVuMeter(container, targetArr) {
+        container.innerHTML = '';
+        for (let i = 0; i < VU_COUNT; i++) {
+          const seg = document.createElement('div');
+          seg.className = 'vu-segment';
+          container.appendChild(seg);
+          targetArr.push(seg);
+        }
+      }
+      buildVuMeter(els.leftVuMeter, leftVuSegments);
+      buildVuMeter(els.rightVuMeter, rightVuSegments);
+
+      // -------------------- Application State --------------------
+      const BPM = 128;
+      const STEP_TIME = 60 / BPM / 4; // 16th note duration (~0.1171875s)
+      const TOTAL_AUTO_SECONDS = 120; // 2:00 full sequence
+
+      let audioCtx = null;
+      let leftBus, rightBus;
+      let leftGate, rightGate;
+      let leftMaster, rightMaster;
+      let leftAnalyser, rightAnalyser;
+      let noiseBuffer = null;
+
+      let leftFreqData, rightFreqData;
+      let leftTimeData, rightTimeData;
+
+      let isRunning = false;
+      let isAutoMode = false;
+      let isPaused = false;
+      let currentMode = 'idle'; // 'idle' | 'left' | 'right' | 'pingpong' | 'bass' | 'djdrop' | 'complete'
+      let voiceEnabled = true;
+      let masterVolume = 0.8;
+
+      // Scheduler state
+      let schedulerTimer = null;
+      let nextStepTime = 0;
+      let currentStep = 0;
+      let pingPongSide = 'L';
+      let activeSubOsc = null;
+      let activeSubGain = null;
+      let currentLiveHz = 0;
+
+      // Auto 2-Min Sequence state
+      let autoElapsed = 0;
+      let autoLastTick = 0;
+      let lastAutoPhaseId = -1;
+      let musicPausedUntil = 0; // Brief silence during voice callout for crystal-clear separation
+
+      // 2-Minute Auto Sequence Phases
+      const AUTO_PHASES = [
+        {
+          id: 0,
+          start: 0,
+          end: 22,
+          mode: 'left',
+          title: 'Left Channel Check',
+          subtitle: '100% Left isolation — Right speaker completely muted',
+          voice: 'Left channel check'
+        },
+        {
+          id: 1,
+          start: 22,
+          end: 44,
+          mode: 'right',
+          title: 'Right Channel Check',
+          subtitle: '100% Right isolation — Left speaker completely muted',
+          voice: 'Right channel check'
+        },
+        {
+          id: 2,
+          start: 44,
+          end: 64,
+          mode: 'pingpong',
+          title: 'Stereo Ping-Pong Check',
+          subtitle: 'Rapid alternating Left to Right stereo imaging',
+          voice: 'Stereo ping pong'
+        },
+        {
+          id: 3,
+          start: 64,
+          end: 86,
+          mode: 'bass',
+          title: 'Deep Sub-Bass Check',
+          subtitle: '30 Hz to 90 Hz controlled sub-bass drop & sweep',
+          voice: 'Deep bass check'
+        },
+        {
+          id: 4,
+          start: 86,
+          end: 115,
+          mode: 'djdrop',
+          title: 'Hard DJ Check — Both Channels',
+          subtitle: 'Full 128 BPM Tech House drop testing lows, mids & highs',
+          voice: 'Hard DJ check, both channels'
+        },
+        {
+          id: 5,
+          start: 115,
+          end: 120,
+          mode: 'complete',
+          title: 'System Check Complete',
+          subtitle: 'Both channels verified & balanced',
+          voice: 'System check complete'
+        }
+      ];
+
+      // -------------------- Toast Helper (Never uses alert) --------------------
+      function showToast(msg) {
+        els.statusToast.textContent = msg;
+        els.statusToast.classList.remove('hidden');
+        setTimeout(() => {
+          els.statusToast.classList.add('hidden');
+        }, 4500);
+      }
+
+      // -------------------- Web Audio Initialization --------------------
+      function initAudioEngine() {
+        try {
+          if (!audioCtx) {
+            const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+            audioCtx = new AudioContextClass();
+
+            // Create two strictly independent mono signal paths
+            leftBus = audioCtx.createGain();
+            rightBus = audioCtx.createGain();
+
+            leftGate = audioCtx.createGain();
+            rightGate = audioCtx.createGain();
+
+            // Independent mono compressors prevent stereo-linking bleed
+            const leftComp = audioCtx.createDynamicsCompressor();
+            leftComp.channelCount = 1;
+            leftComp.channelCountMode = 'explicit';
+            leftComp.threshold.value = -8;
+            leftComp.knee.value = 12;
+            leftComp.ratio.value = 4;
+            leftComp.attack.value = 0.003;
+            leftComp.release.value = 0.12;
+
+            const rightComp = audioCtx.createDynamicsCompressor();
+            rightComp.channelCount = 1;
+            rightComp.channelCountMode = 'explicit';
+            rightComp.threshold.value = -8;
+            rightComp.knee.value = 12;
+            rightComp.ratio.value = 4;
+            rightComp.attack.value = 0.003;
+            rightComp.release.value = 0.12;
+
+            leftMaster = audioCtx.createGain();
+            rightMaster = audioCtx.createGain();
+            leftMaster.gain.value = masterVolume;
+            rightMaster.gain.value = masterVolume;
+
+            // Strict 2-channel Hardware Merger (Input 0 = Left, Input 1 = Right)
+            const merger = audioCtx.createChannelMerger(2);
+
+            leftBus.connect(leftGate);
+            leftGate.connect(leftComp);
+            leftComp.connect(leftMaster);
+            leftMaster.connect(merger, 0, 0);
+
+            rightBus.connect(rightGate);
+            rightGate.connect(rightComp);
+            rightComp.connect(rightMaster);
+            rightMaster.connect(merger, 0, 1);
+
+            // Send merged stereo signal to actual hardware output
+            merger.connect(audioCtx.destination);
+
+            // Split final stereo output into two independent Analysers
+            const splitter = audioCtx.createChannelSplitter(2);
+            merger.connect(splitter);
+
+            leftAnalyser = audioCtx.createAnalyser();
+            leftAnalyser.fftSize = 512;
+            leftAnalyser.smoothingTimeConstant = 0.72;
+
+            rightAnalyser = audioCtx.createAnalyser();
+            rightAnalyser.fftSize = 512;
+            rightAnalyser.smoothingTimeConstant = 0.72;
+
+            splitter.connect(leftAnalyser, 0);
+            splitter.connect(rightAnalyser, 1);
+
+            leftFreqData = new Uint8Array(leftAnalyser.frequencyBinCount);
+            rightFreqData = new Uint8Array(rightAnalyser.frequencyBinCount);
+            leftTimeData = new Uint8Array(leftAnalyser.fftSize);
+            rightTimeData = new Uint8Array(rightAnalyser.fftSize);
+
+            // Pre-generate crisp white noise buffer for hi-hats & claps
+            const bufferLen = audioCtx.sampleRate * 1.0;
+            noiseBuffer = audioCtx.createBuffer(1, bufferLen, audioCtx.sampleRate);
+            const data = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferLen; i++) {
+              data[i] = Math.random() * 2 - 1;
+            }
+          }
+
+          if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+          }
+          return true;
+        } catch (err) {
+          console.error('Web Audio init failed:', err);
+          showToast('Audio engine could not start. Please tap a button again.');
+          return false;
+        }
+      }
+
+      // -------------------- Strict Channel Routing & Gating --------------------
+      function setChannelGates(mode) {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const ramp = 0.015;
+
+        if (mode === 'left') {
+          leftGate.gain.setTargetAtTime(1.0, now, ramp);
+          rightGate.gain.setTargetAtTime(0.0, now, ramp);
+        } else if (mode === 'right') {
+          leftGate.gain.setTargetAtTime(0.0, now, ramp);
+          rightGate.gain.setTargetAtTime(1.0, now, ramp);
+        } else if (mode === 'pingpong' || mode === 'bass' || mode === 'djdrop' || mode === 'complete') {
+          leftGate.gain.setTargetAtTime(1.0, now, ramp);
+          rightGate.gain.setTargetAtTime(1.0, now, ramp);
+        } else {
+          leftGate.gain.setTargetAtTime(0.0, now, ramp);
+          rightGate.gain.setTargetAtTime(0.0, now, ramp);
+        }
+      }
+
+      function routeNode(node, channel) {
+        if (channel === 'L') {
+          node.connect(leftBus);
+        } else if (channel === 'R') {
+          node.connect(rightBus);
+        } else if (channel === 'BOTH') {
+          node.connect(leftBus);
+          node.connect(rightBus);
+        }
+      }
+
+      // -------------------- Speech Synthesis Callouts --------------------
+      function speakCallout(text) {
+        if (!voiceEnabled || !text) return;
+        try {
+          if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            utter.lang = 'en-US';
+            utter.rate = 1.08;
+            utter.pitch = 0.95;
+            utter.volume = Math.min(1, masterVolume + 0.15);
+            window.speechSynthesis.speak(utter);
+          }
+        } catch (e) {
+          // Graceful fallback if speech synthesis is blocked
+        }
+      }
+
+      // -------------------- Real-Time DJ Synthesizer Voices --------------------
+
+      // 1. Punchy 128 BPM Tech-House Kick Drum
+      function playKick(time, channel, punch = 1.0) {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(160, time);
+        osc.frequency.exponentialRampToValueAtTime(48, time + 0.048);
+        osc.frequency.exponentialRampToValueAtTime(38, time + 0.28);
+
+        gain.gain.setValueAtTime(0.95 * punch, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.31);
+
+        osc.connect(gain);
+        routeNode(gain, channel);
+        osc.start(time);
+        osc.stop(time + 0.32);
+
+        // Short attack click transient for club punch
+        const click = audioCtx.createBufferSource();
+        click.buffer = noiseBuffer;
+        const clickFilter = audioCtx.createBiquadFilter();
+        clickFilter.type = 'bandpass';
+        clickFilter.frequency.value = 3200;
+        const clickGain = audioCtx.createGain();
+        clickGain.gain.setValueAtTime(0.28 * punch, time);
+        clickGain.gain.exponentialRampToValueAtTime(0.001, time + 0.012);
+
+        click.connect(clickFilter);
+        clickFilter.connect(clickGain);
+        routeNode(clickGain, channel);
+        click.start(time);
+        click.stop(time + 0.015);
+      }
+
+      // 2. Crisp Hi-Hats (Closed & Open) — Tests Tweeter Clarity
+      function playHat(time, channel, isOpen = false, level = 0.35) {
+        const src = audioCtx.createBufferSource();
+        src.buffer = noiseBuffer;
+
+        const hp = audioCtx.createBiquadFilter();
+        hp.type = 'highpass';
+        hp.frequency.value = 7800;
+
+        const bp = audioCtx.createBiquadFilter();
+        bp.type = 'bandpass';
+        bp.frequency.value = 11200;
+        bp.Q.value = 1.2;
+
+        const gain = audioCtx.createGain();
+        const dur = isOpen ? 0.19 : 0.045;
+        gain.gain.setValueAtTime(level, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+        src.connect(hp);
+        hp.connect(bp);
+        bp.connect(gain);
+        routeNode(gain, channel);
+
+        src.start(time);
+        src.stop(time + dur + 0.01);
+      }
+
+      // 3. Snappy Club Clap (Layered Micro-Bursts)
+      function playClap(time, channel, level = 0.55) {
+        const offsets = [0, 0.011, 0.022];
+        offsets.forEach((offset, idx) => {
+          const src = audioCtx.createBufferSource();
+          src.buffer = noiseBuffer;
+
+          const bp = audioCtx.createBiquadFilter();
+          bp.type = 'bandpass';
+          bp.frequency.value = 1350;
+          bp.Q.value = 1.1;
+
+          const gain = audioCtx.createGain();
+          const decay = idx === 2 ? 0.16 : 0.025;
+          gain.gain.setValueAtTime(level * (idx === 2 ? 1 : 0.65), time + offset);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + offset + decay);
+
+          src.connect(bp);
+          bp.connect(gain);
+          routeNode(gain, channel);
+
+          src.start(time + offset);
+          src.stop(time + offset + decay + 0.01);
+        });
+      }
+
+      // 4. Driving Tech-House Bassline
+      function playBassNote(time, freq, channel, dur = 0.18, level = 0.5) {
+        const osc = audioCtx.createOscillator();
+        const sub = audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        sub.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+        sub.frequency.setValueAtTime(freq, time);
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.Q.value = 5.5;
+        filter.frequency.setValueAtTime(980, time);
+        filter.frequency.exponentialRampToValueAtTime(135, time + dur * 0.85);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.001, time);
+        gain.gain.linearRampToValueAtTime(level, time + 0.008);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+        osc.connect(filter);
+        sub.connect(filter);
+        filter.connect(gain);
+        routeNode(gain, channel);
+
+        osc.start(time);
+        sub.start(time);
+        osc.stop(time + dur + 0.02);
+        sub.stop(time + dur + 0.02);
+      }
+
+      // 5. Crisp Tech Synth Stab / High-Frequency Chime
+      function playSynthPluck(time, freq, channel, level = 0.25) {
+        const osc1 = audioCtx.createOscillator();
+        const osc2 = audioCtx.createOscillator();
+        osc1.type = 'square';
+        osc2.type = 'triangle';
+        osc1.frequency.setValueAtTime(freq, time);
+        osc2.frequency.setValueAtTime(freq * 1.006, time); // subtle chorus detune
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(freq * 3.2, time);
+        filter.frequency.exponentialRampToValueAtTime(freq * 1.1, time + 0.16);
+        filter.Q.value = 2.0;
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(level, time);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.18);
+
+        osc1.connect(filter);
+        osc2.connect(filter);
+        filter.connect(gain);
+        routeNode(gain, channel);
+
+        osc1.start(time);
+        osc2.start(time);
+        osc1.stop(time + 0.2);
+        osc2.stop(time + 0.2);
+      }
+
+      // 6. Clean High-Frequency Stereo Verification Chime
+      function playChime(time, freq, channel, level = 0.22) {
+        const osc = audioCtx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.001, time);
+        gain.gain.linearRampToValueAtTime(level, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, time + 0.45);
+
+        osc.connect(gain);
+        routeNode(gain, channel);
+        osc.start(time);
+        osc.stop(time + 0.48);
+      }
+
+      // 7. Deep Sub-Bass Drop & Smooth Sweep (30Hz - 90Hz)
+      function triggerSubBassCycle(time, stepIndex) {
+        const cyclePos = stepIndex % 32; // 2-bar sub cycle (~3.75s)
+        if (cyclePos === 0) {
+          // Smooth sub sweep 85Hz -> 34Hz
+          const osc = audioCtx.createOscillator();
+          const harm = audioCtx.createOscillator(); // subtle 2nd harmonic for headphone clarity
+          const gain = audioCtx.createGain();
+          const harmGain = audioCtx.createGain();
+
+          osc.type = 'sine';
+          harm.type = 'sine';
+
+          osc.frequency.setValueAtTime(85, time);
+          osc.frequency.exponentialRampToValueAtTime(34, time + STEP_TIME * 14);
+          harm.frequency.setValueAtTime(170, time);
+          harm.frequency.exponentialRampToValueAtTime(68, time + STEP_TIME * 14);
+
+          gain.gain.setValueAtTime(0.001, time);
+          gain.gain.linearRampToValueAtTime(0.82, time + 0.06);
+          gain.gain.setValueAtTime(0.82, time + STEP_TIME * 12);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + STEP_TIME * 15.5);
+
+          harmGain.gain.value = 0.12;
+
+          osc.connect(gain);
+          harm.connect(harmGain);
+          harmGain.connect(gain);
+          routeNode(gain, 'BOTH');
+
+          osc.start(time);
+          harm.start(time);
+          osc.stop(time + STEP_TIME * 16);
+          harm.stop(time + STEP_TIME * 16);
+          currentLiveHz = 85;
+        } else if (cyclePos < 16) {
+          // Interpolate displayed sweep Hz
+          const progress = cyclePos / 14;
+          currentLiveHz = Math.round(85 * Math.pow(34 / 85, Math.min(1, progress)));
+        } else if (cyclePos === 16 || cyclePos === 24) {
+          // Deep 42Hz & 32Hz sub-bass drops
+          const targetHz = cyclePos === 16 ? 48 : 32;
+          currentLiveHz = targetHz;
+
+          const osc = audioCtx.createOscillator();
+          const gain = audioCtx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(targetHz * 1.4, time);
+          osc.frequency.exponentialRampToValueAtTime(targetHz, time + 0.08);
+
+          gain.gain.setValueAtTime(0.001, time);
+          gain.gain.linearRampToValueAtTime(0.85, time + 0.03);
+          gain.gain.exponentialRampToValueAtTime(0.001, time + STEP_TIME * 7.5);
+
+          osc.connect(gain);
+          routeNode(gain, 'BOTH');
+          osc.start(time);
+          osc.stop(time + STEP_TIME * 7.8);
+        }
+
+        // Gentle top tick every 4 steps so beat stays musical
+        if (cyclePos % 4 === 0) {
+          playHat(time, 'BOTH', false, 0.14);
+        }
+      }
+
+      // -------------------- Musical Step Sequencer (128 BPM) --------------------
+      // F-minor groovy club bassline frequencies (Hz)
+      const BASS_PATTERN = [
+        43.65, 0, 43.65, 51.91,
+        0, 43.65, 58.27, 0,
+        43.65, 0, 65.41, 58.27,
+        0, 51.91, 43.65, 65.41
+      ];
+
+      const PLUCK_PATTERN = [
+        0, 0, 349.23, 0,
+        0, 415.30, 0, 523.25,
+        0, 0, 349.23, 0,
+        622.25, 0, 523.25, 415.30
+      ];
+
+      function scheduleStep(step, time) {
+        // Respect brief silence window during voice callouts
+        if (time < musicPausedUntil) return;
+
+        const s = step % 16;
+
+        if (currentMode === 'left' || currentMode === 'right') {
+          const ch = currentMode === 'left' ? 'L' : 'R';
+          currentLiveHz = 0;
+
+          // 4-on-the-floor punchy kick
+          if (s % 4 === 0) playKick(time, ch, 1.0);
+          // Off-beat open hat + 16th closed hats
+          if (s % 4 === 2) playHat(time, ch, true, 0.32);
+          else if (s % 2 === 1) playHat(time, ch, false, 0.16);
+          // Club clap on 2 & 4
+          if (s === 4 || s === 12) playClap(time, ch, 0.5);
+          // Groovy bassline
+          if (BASS_PATTERN[s] > 0) playBassNote(time, BASS_PATTERN[s], ch, 0.18, 0.52);
+          // Tech synth stabs & high chime for tweeter verification
+          if (PLUCK_PATTERN[s] > 0) playSynthPluck(time, PLUCK_PATTERN[s], ch, 0.2);
+          if (s === 0 && (step % 32 === 0)) playChime(time, ch === 'L' ? 2093 : 2637, ch, 0.18);
+        } else if (currentMode === 'pingpong') {
+          // Alternates strictly Left -> Right -> Left -> Right
+          // Speeds up from quarter-notes to 8th-notes every 2 bars
+          const fastMode = Math.floor(step / 32) % 2 === 1;
+          const triggerInterval = fastMode ? 2 : 4;
+
+          if (s % triggerInterval === 0) {
+            pingPongSide = pingPongSide === 'L' ? 'R' : 'L';
+            const ch = pingPongSide;
+
+            playKick(time, ch, 0.92);
+            playClap(time, ch, 0.42);
+            playSynthPluck(time, ch === 'L' ? 440 : 587.33, ch, 0.28);
+            playHat(time, ch, true, 0.25);
+            updatePingPongBadges(ch);
+          }
+        } else if (currentMode === 'bass') {
+          triggerSubBassCycle(time, step);
+        } else if (currentMode === 'djdrop') {
+          currentLiveHz = 0;
+          // Full club 128 BPM Tech House Drop across BOTH channels
+          if (s % 4 === 0) playKick(time, 'BOTH', 1.0);
+          if (s % 4 === 2) playHat(time, 'BOTH', true, 0.34);
+          else playHat(time, 'BOTH', false, 0.14);
+          if (s === 4 || s === 12) playClap(time, 'BOTH', 0.58);
+
+          // Solid centered bassline
+          if (BASS_PATTERN[s] > 0) {
+            playBassNote(time, BASS_PATTERN[s], 'BOTH', 0.19, 0.54);
+          }
+
+          // Stereo-bouncing synth plucks & sparkling highs for wide club soundstage
+          if (PLUCK_PATTERN[s] > 0) {
+            const stereoSide = (s % 4 < 2) ? 'L' : 'R';
+            playSynthPluck(time, PLUCK_PATTERN[s], stereoSide, 0.26);
+          }
+          if (s === 14) {
+            playChime(time, 3135.96, 'L', 0.14);
+            playChime(time + 0.04, 4186.01, 'R', 0.14);
+          }
+        } else if (currentMode === 'complete') {
+          // Clean celebratory verification chord once
+          if (step === 0) {
+            playChime(time, 523.25, 'L', 0.2);
+            playChime(time + 0.08, 659.25, 'R', 0.2);
+            playChime(time + 0.16, 783.99, 'BOTH', 0.22);
+          }
+        }
+      }
+
+      // Lookahead Scheduler Loop (runs every 25ms)
+      function schedulerTick() {
+        if (!isRunning || isPaused || !audioCtx) return;
+
+        // Handle Auto 2-Minute Sequence timeline progression
+        if (isAutoMode) {
+          const nowPerf = performance.now();
+          const dt = (nowPerf - autoLastTick) / 1000;
+          autoLastTick = nowPerf;
+          autoElapsed += dt;
+
+          if (autoElapsed >= TOTAL_AUTO_SECONDS) {
+            stopAll();
+            els.phaseTitle.textContent = 'System Check Complete';
+            els.phaseSubtitle.textContent = '2-minute full stereo test finished cleanly.';
+            els.modeTag.textContent = 'COMPLETED';
+            els.progressBar.style.width = '100%';
+            els.timerReadout.textContent = '02:00 / 02:00';
+            return;
+          }
+
+          // Find current auto phase
+          const phase = AUTO_PHASES.find(p => autoElapsed >= p.start && autoElapsed < p.end);
+          if (phase && phase.id !== lastAutoPhaseId) {
+            lastAutoPhaseId = phase.id;
+            enterPhase(phase.mode, phase.title, phase.subtitle, phase.voice, true);
+          }
+
+          updateAutoTimelineUI();
+        }
+
+        // Schedule upcoming Web Audio steps 100ms ahead
+        while (nextStepTime < audioCtx.currentTime + 0.1) {
+          scheduleStep(currentStep, nextStepTime);
+          nextStepTime += STEP_TIME;
+          currentStep++;
+        }
+      }
+
+      // -------------------- Mode Switching & Controls --------------------
+      function enterPhase(mode, title, subtitle, voiceText, fromAuto = false) {
+        currentMode = mode;
+        currentStep = 0;
+        setChannelGates(mode);
+
+        // Give a crisp 1.15s speech window if voice callouts are enabled
+        if (voiceEnabled && voiceText) {
+          speakCallout(voiceText);
+          musicPausedUntil = audioCtx.currentTime + (mode === 'complete' ? 0.1 : 1.15);
+        } else {
+          musicPausedUntil = 0;
+        }
+
+        els.phaseTitle.textContent = title;
+        els.phaseSubtitle.textContent = subtitle;
+        els.modeTag.textContent = fromAuto ? 'AUTO 2-MIN SEQUENCE' : 'MANUAL TEST MODE';
+
+        updateChannelUIState(mode);
+        updatePadHighlights(fromAuto ? null : mode);
+      }
+
+      function startAutoSequence() {
+        if (!initAudioEngine()) return;
+
+        // Toggle Pause / Resume if already in Auto mode
+        if (isRunning && isAutoMode) {
+          if (!isPaused) {
+            isPaused = true;
+            setChannelGates('idle');
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            els.autoBtnLabel.textContent = 'Resume 2-Min Test';
+            els.autoPlayIcon.innerHTML = '<polygon points="6 4 20 12 6 20 6 4"></polygon>';
+            els.modeTag.textContent = 'PAUSED';
+          } else {
+            isPaused = false;
+            autoLastTick = performance.now();
+            nextStepTime = audioCtx.currentTime + 0.05;
+            setChannelGates(currentMode);
+            els.autoBtnLabel.textContent = 'Pause 2-Min Test';
+            els.autoPlayIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+            els.modeTag.textContent = 'AUTO 2-MIN SEQUENCE';
+          }
+          return;
+        }
+
+        // Fresh start of Auto 2-Minute Sequence
+        stopAll(false);
+        isRunning = true;
+        isAutoMode = true;
+        isPaused = false;
+        autoElapsed = 0;
+        lastAutoPhaseId = -1;
+        autoLastTick = performance.now();
+        nextStepTime = audioCtx.currentTime + 0.05;
+
+        els.autoBtnLabel.textContent = 'Pause 2-Min Test';
+        els.autoPlayIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect>';
+
+        schedulerTimer = setInterval(schedulerTick, 25);
+        schedulerTick();
+      }
+
+      function startManualMode(mode) {
+        if (mode === 'stop') {
+          stopAll();
+          return;
+        }
+        if (!initAudioEngine()) return;
+
+        stopAll(false);
+        isRunning = true;
+        isAutoMode = false;
+        isPaused = false;
+        nextStepTime = audioCtx.currentTime + 0.05;
+
+        const configs = {
+          left: {
+            title: 'Left Channel Only',
+            subtitle: '100% Left isolation — Right speaker strictly muted (0.0)',
+            voice: 'Left channel check'
+          },
+          right: {
+            title: 'Right Channel Only',
+            subtitle: '100% Right isolation — Left speaker strictly muted (0.0)',
+            voice: 'Right channel check'
+          },
+          pingpong: {
+            title: 'Stereo Ping-Pong (L ↔ R)',
+            subtitle: 'Alternating hits bouncing cleanly Left to Right',
+            voice: 'Stereo ping pong'
+          },
+          bass: {
+            title: 'Deep Sub-Bass Check',
+            subtitle: '30 Hz to 90 Hz sub-bass sweep & punchy low drops',
+            voice: 'Deep bass check'
+          },
+          djdrop: {
+            title: 'Hard DJ Drop — Both Channels',
+            subtitle: '128 BPM Tech House full-range stereo club test',
+            voice: 'Hard DJ check, both channels'
+          }
+        };
+
+        const cfg = configs[mode];
+        enterPhase(mode, cfg.title, cfg.subtitle, cfg.voice, false);
+        els.timerReadout.textContent = 'LIVE LOOP';
+        els.progressBar.style.width = '100%';
+
+        schedulerTimer = setInterval(schedulerTick, 25);
+      }
+
+      function stopAll(resetText = true) {
+        isRunning = false;
+        isAutoMode = false;
+        isPaused = false;
+        currentMode = 'idle';
+        currentLiveHz = 0;
+
+        if (schedulerTimer) {
+          clearInterval(schedulerTimer);
+          schedulerTimer = null;
+        }
+        if (audioCtx) {
+          setChannelGates('idle');
+        }
+        try {
+          if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+        } catch (e) {}
+
+        els.autoBtnLabel.textContent = 'Start 2-Min DJ Test';
+        els.autoPlayIcon.innerHTML = '<polygon points="6 4 20 12 6 20 6 4"></polygon>';
+        updateChannelUIState('idle');
+        updatePadHighlights(null);
+
+        if (resetText) {
+          els.modeTag.textContent = 'STANDBY';
+          els.phaseTitle.textContent = 'Ready for Sound Check';
+          els.phaseSubtitle.textContent = 'Wear earphones or connect stereo speakers & press Start.';
+          els.freqReadout.textContent = '-- Hz';
+          els.timerReadout.textContent = '00:00 / 02:00';
+          els.progressBar.style.width = '0%';
+        }
+      }
+
+      // -------------------- UI State Helpers --------------------
+      function formatTime(sec) {
+        const s = Math.max(0, Math.floor(sec));
+        const m = Math.floor(s / 60);
+        const rem = s % 60;
+        return `${String(m).padStart(2, '0')}:${String(rem).padStart(2, '0')}`;
+      }
+
+      function updateAutoTimelineUI() {
+        const pct = Math.min(100, (autoElapsed / TOTAL_AUTO_SECONDS) * 100);
+        els.progressBar.style.width = `${pct.toFixed(1)}%`;
+        els.timerReadout.textContent = `${formatTime(autoElapsed)} / 02:00`;
+      }
+
+      function updateChannelUIState(mode) {
+        // Reset badges
+        els.badgeL.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500 transition';
+        els.badgeBoth.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500 transition';
+        els.badgeR.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500 transition';
+
+        els.leftCabinet.classList.remove('active-left', 'dimmed');
+        els.rightCabinet.classList.remove('active-right', 'dimmed');
+
+        if (mode === 'left') {
+          els.badgeL.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-cyan-500/20 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(0,229,255,0.4)] transition';
+          els.leftCabinet.classList.add('active-left');
+          els.rightCabinet.classList.add('dimmed');
+        } else if (mode === 'right') {
+          els.badgeR.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-amber-500/20 border border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(255,122,0,0.4)] transition';
+          els.rightCabinet.classList.add('active-right');
+          els.leftCabinet.classList.add('dimmed');
+        } else if (mode === 'bass' || mode === 'djdrop' || mode === 'complete') {
+          els.badgeBoth.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-emerald-500/20 border border-emerald-400 text-emerald-300 shadow-[0_0_12px_rgba(16,185,129,0.4)] transition';
+          els.leftCabinet.classList.add('active-left');
+          els.rightCabinet.classList.add('active-right');
+        } else if (mode === 'pingpong') {
+          els.leftCabinet.classList.add('active-left');
+          els.rightCabinet.classList.add('active-right');
+        }
+      }
+
+      function updatePingPongBadges(side) {
+        if (currentMode !== 'pingpong') return;
+        if (side === 'L') {
+          els.badgeL.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-cyan-500/20 border border-cyan-400 text-cyan-300 shadow-[0_0_12px_rgba(0,229,255,0.4)]';
+          els.badgeR.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500';
+          els.leftCabinet.classList.add('active-left');
+          els.leftCabinet.classList.remove('dimmed');
+          els.rightCabinet.classList.remove('active-right');
+          els.rightCabinet.classList.add('dimmed');
+        } else {
+          els.badgeR.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-amber-500/20 border border-amber-400 text-amber-300 shadow-[0_0_12px_rgba(255,122,0,0.4)]';
+          els.badgeL.className = 'px-2.5 py-1 rounded-lg font-mono-studio text-xs font-bold bg-slate-900 border border-slate-700 text-slate-500';
+          els.rightCabinet.classList.add('active-right');
+          els.rightCabinet.classList.remove('dimmed');
+          els.leftCabinet.classList.remove('active-left');
+          els.leftCabinet.classList.add('dimmed');
+        }
+      }
+
+      function updatePadHighlights(activeMode) {
+        els.padButtons.forEach(btn => {
+          btn.classList.remove('pad-active-left', 'pad-active-right', 'pad-active-both');
+          const m = btn.dataset.mode;
+          if (m && m === activeMode) {
+            if (m === 'left') btn.classList.add('pad-active-left');
+            else if (m === 'right') btn.classList.add('pad-active-right');
+            else btn.classList.add('pad-active-both');
+          }
+        });
+      }
+
+      // -------------------- Responsive Canvas Sizing --------------------
+      const leftCtx = els.leftCanvas.getContext('2d');
+      const rightCtx = els.rightCanvas.getContext('2d');
+
+      function resizeCanvases() {
+        const dpr = window.devicePixelRatio || 1;
+        [els.leftCanvas, els.rightCanvas].forEach(canvas => {
+          const rect = canvas.getBoundingClientRect();
+          canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+          canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+        });
+      }
+
+      window.addEventListener('resize', resizeCanvases);
+      resizeCanvases();
+
+      // -------------------- Real-Time Dual Channel Visualizer Loop --------------------
+      function analyzeChannel(analyser, freqData, timeData) {
+        if (!analyser) {
+          return { rms: 0, db: -Infinity, bass: 0, high: 0, peakHz: 0 };
+        }
+        analyser.getByteFrequencyData(freqData);
+        analyser.getByteTimeDomainData(timeData);
+
+        // Compute true RMS amplitude from time-domain waveform
+        let sumSq = 0;
+        for (let i = 0; i < timeData.length; i++) {
+          const v = (timeData[i] - 128) / 128;
+          sumSq += v * v;
+        }
+        const rms = Math.sqrt(sumSq / timeData.length);
+        const db = rms > 0.0005 ? Math.max(-60, 20 * Math.log10(rms)) : -Infinity;
+
+        // Bass energy (low bins 1..6 ~ 40Hz - 280Hz)
+        let bassSum = 0;
+        for (let i = 1; i <= 6; i++) bassSum += freqData[i];
+        const bass = bassSum / (6 * 255);
+
+        // Treble / Tweeter energy (high bins 45..140 ~ 4kHz - 13kHz)
+        let highSum = 0;
+        for (let i = 45; i < 140; i++) highSum += freqData[i];
+        const high = highSum / (95 * 255);
+
+        // Find dominant peak bin for readout
+        let maxVal = 0;
+        let maxIdx = 0;
+        for (let i = 1; i < freqData.length; i++) {
+          if (freqData[i] > maxVal) {
+            maxVal = freqData[i];
+            maxIdx = i;
+          }
+        }
+        const binHz = audioCtx ? (audioCtx.sampleRate / analyser.fftSize) : 93.75;
+        const peakHz = maxVal > 20 ? Math.round(maxIdx * binHz) : 0;
+
+        return { rms, db, bass, high, peakHz };
+      }
+
+      function renderSpectrum(ctx, canvas, freqData, colorPrimary, colorGlow) {
+        const w = canvas.width;
+        const h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        // Subtle studio grid lines
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.08)';
+        ctx.lineWidth = 1;
+        for (let y = h * 0.25; y < h; y += h * 0.25) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(w, y);
+          ctx.stroke();
+        }
+
+        if (!freqData) return;
+
+        const barCount = 28;
+        const gap = Math.max(2, Math.floor(w / 140));
+        const barWidth = (w - gap * (barCount - 1)) / barCount;
+
+        for (let i = 0; i < barCount; i++) {
+          // Logarithmic-ish bin spacing so bass & highs both look rich
+          const binIdx = Math.min(freqData.length - 1, Math.floor(Math.pow(i / barCount, 1.45) * 140) + 1);
+          const val = freqData[binIdx] / 255;
+          const barH = Math.max(2, val * (h - 6));
+
+          const x = i * (barWidth + gap);
+          const y = h - barH;
+
+          const grad = ctx.createLinearGradient(0, h, 0, y);
+          grad.addColorStop(0, colorGlow);
+          grad.addColorStop(0.7, colorPrimary);
+          grad.addColorStop(1, '#ffffff');
+
+          ctx.fillStyle = val > 0.01 ? grad : 'rgba(51, 65, 85, 0.35)';
+          ctx.fillRect(x, y, barWidth, barH);
+        }
+      }
+
+      function updateVuSegments(segments, rms, accentColor) {
+        const activeCount = Math.min(VU_COUNT, Math.round(rms * 26));
+        for (let i = 0; i < VU_COUNT; i++) {
+          const seg = segments[i];
+          if (i < activeCount) {
+            if (i >= 10) {
+              seg.style.backgroundColor = '#ef4444';
+              seg.style.boxShadow = '0 0 8px rgba(239, 68, 68, 0.7)';
+            } else if (i >= 8) {
+              seg.style.backgroundColor = '#f59e0b';
+              seg.style.boxShadow = '0 0 6px rgba(245, 158, 11, 0.5)';
+            } else {
+              seg.style.backgroundColor = accentColor;
+              seg.style.boxShadow = `0 0 6px ${accentColor}`;
+            }
+          } else {
+            seg.style.backgroundColor = '#1a2130';
+            seg.style.boxShadow = 'none';
+          }
+        }
+      }
+
+      function animateDrivers(stats, wooferEl, ringEl, tweeterEl, ledEl, dbEl, hexColor) {
+        // Strictly zero movement when channel signal is silent
+        const isAudible = stats.rms > 0.002;
+        const wooferScale = isAudible ? (1 + stats.bass * 0.14 + stats.rms * 0.08) : 1;
+        const tweeterScale = isAudible ? (1 + stats.high * 0.18) : 1;
+
+        wooferEl.style.transform = `scale(${wooferScale.toFixed(4)})`;
+        tweeterEl.style.transform = `scale(${tweeterScale.toFixed(4)})`;
+
+        if (isAudible) {
+          const ringOpacity = Math.min(0.95, stats.bass * 1.15 + stats.rms * 0.6);
+          ringEl.style.opacity = ringOpacity.toFixed(3);
+          ringEl.style.transform = `scale(${(1 + stats.bass * 0.05).toFixed(4)})`;
+          ledEl.style.backgroundColor = hexColor;
+          ledEl.style.boxShadow = `0 0 10px ${hexColor}`;
+          dbEl.textContent = `${stats.db.toFixed(1)} dB`;
+          dbEl.style.color = hexColor;
+        } else {
+          ringEl.style.opacity = '0';
+          ringEl.style.transform = 'scale(1)';
+          ledEl.style.backgroundColor = '#334155';
+          ledEl.style.boxShadow = 'none';
+          dbEl.innerHTML = '-&infin; dB';
+          dbEl.style.color = '#64748b';
+        }
+      }
+
+      function renderLoop() {
+        const leftStats = analyzeChannel(leftAnalyser, leftFreqData, leftTimeData);
+        const rightStats = analyzeChannel(rightAnalyser, rightFreqData, rightTimeData);
+
+        // Animate Left & Right Speakers completely independently
+        animateDrivers(leftStats, els.leftWoofer, els.leftWooferRing, els.leftTweeter, els.leftLed, els.leftDbReadout, '#00e5ff');
+        animateDrivers(rightStats, els.rightWoofer, els.rightWooferRing, els.rightTweeter, els.rightLed, els.rightDbReadout, '#ff7a00');
+
+        // Update LED VU Meters
+        updateVuSegments(leftVuSegments, leftStats.rms, '#00e5ff');
+        updateVuSegments(rightVuSegments, rightStats.rms, '#ff7a00');
+
+        // Render Independent Spectrum Visualizers
+        renderSpectrum(leftCtx, els.leftCanvas, leftFreqData, '#00e5ff', 'rgba(0, 229, 255, 0.25)');
+        renderSpectrum(rightCtx, els.rightCanvas, rightFreqData, '#ff7a00', 'rgba(255, 122, 0, 0.25)');
+
+        // Update Central Signal Info Readout
+        if (isRunning && !isPaused) {
+          if (currentMode === 'bass' && currentLiveHz > 0) {
+            els.freqReadout.textContent = `SUB: ${currentLiveHz} Hz`;
+          } else {
+            const peak = Math.max(leftStats.peakHz, rightStats.peakHz);
+            els.freqReadout.textContent = peak > 0 ? `PEAK: ${peak} Hz` : 'ACTIVE';
+          }
+        }
+
+        requestAnimationFrame(renderLoop);
+      }
+
+      // -------------------- Event Listeners --------------------
+      els.autoTestBtn.addEventListener('click', startAutoSequence);
+      els.stopBtn.addEventListener('click', () => stopAll(true));
+
+      els.padButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          startManualMode(btn.dataset.mode);
+        });
+      });
+
+      els.volumeSlider.addEventListener('input', (e) => {
+        const val = Number(e.target.value);
+        masterVolume = val / 100;
+        els.volumeReadout.textContent = `${val}%`;
+        if (leftMaster && rightMaster && audioCtx) {
+          leftMaster.gain.setTargetAtTime(masterVolume, audioCtx.currentTime, 0.02);
+          rightMaster.gain.setTargetAtTime(masterVolume, audioCtx.currentTime, 0.02);
+        }
+      });
+
+      els.voiceToggleBtn.addEventListener('click', () => {
+        voiceEnabled = !voiceEnabled;
+        els.voiceStatusText.textContent = voiceEnabled ? 'ON' : 'OFF';
+        els.voiceStatusText.className = voiceEnabled
+          ? 'font-mono-studio text-emerald-400'
+          : 'font-mono-studio text-slate-500';
+        els.voiceLed.className = voiceEnabled
+          ? 'w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981]'
+          : 'w-2 h-2 rounded-full bg-slate-600';
+
+        if (!voiceEnabled && 'speechSynthesis' in window) {
+          window.speechSynthesis.cancel();
+        }
+      });
+
+      // Start visual loop on page load
+      window.addEventListener('load', () => {
+        resizeCanvases();
+        requestAnimationFrame(renderLoop);
+      });
+    })();
+  </script>
+</body>
+      </html>
